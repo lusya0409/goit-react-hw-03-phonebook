@@ -14,11 +14,36 @@ export class Phonebook extends Component {
     filter: '',
   };
 
-  changeFilter = newFilter => {
-    this.setState({
-      filter: newFilter,
-    });
+  componentDidMount() {
+    const savedContacts = localStorage.getItem('saved-contacts');
+    if (savedContacts !== null) {
+      this.setState({
+        contacts: JSON.parse(savedContacts),
+      });
+    }
+  }
+  componentDidUpdate(prevState) {
+    if (prevState.contacts !== this.state.contacts)
+      localStorage.setItem(
+        'saved-contacts',
+        JSON.stringify(this.state.contacts)
+      );
+  }
+
+  addContact = newContact => {
+    const hasContact = this.state.contacts.find(
+      ({ name }) => name.toLowerCase() === newContact.name.toLowerCase()
+    );
+    if (hasContact) {
+      alert(`${newContact.name} is already in contacts`);
+      return;
+    }
+
+    this.setState(prevState => ({
+      contacts: [...prevState.contacts, { id: nanoid(), ...newContact }],
+    }));
   };
+
   deleteContact = contactId => {
     this.setState(prevState => ({
       contacts: prevState.contacts.filter(contact => contact.id !== contactId),
@@ -32,18 +57,10 @@ export class Phonebook extends Component {
       return name.toLowerCase().includes(filter.toLowerCase());
     });
   };
-  addContact = newContact => {
-    const hasContact = this.state.contacts.find(
-      ({ name }) => name.toLowerCase() === newContact.name.toLowerCase()
-    );
-    if (hasContact) {
-      alert(`${newContact.name} is already in contacts`);
-      return;
-    }
-
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, { id: nanoid(), ...newContact }],
-    }));
+  changeFilter = newFilter => {
+    this.setState({
+      filter: newFilter,
+    });
   };
 
   render() {
